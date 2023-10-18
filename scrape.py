@@ -43,6 +43,10 @@ def scrape_post_data(post_elm):
     return {"title": title, "description": description, "votes": votes}
 
 
+# ====================================================================================
+# ======================================= START ======================================
+# ====================================================================================
+
 prev_scroll_position = 0
 consecutive_same_position_count = 0  # variable which gets incremented
 # when previous_scroll_pos is same as current_scroll_pos,
@@ -53,7 +57,6 @@ WebDriverWait(driver, 10).until(
     EC.presence_of_element_located((By.CSS_SELECTOR, "shreddit-post[permalink^='/r/']"))
 )
 
-i = 1
 while True:
     driver.find_element(By.TAG_NAME, "body").send_keys(Keys.END)
     current_scroll_position = driver.execute_script("return window.scrollY")
@@ -66,10 +69,7 @@ while True:
     else:
         consecutive_same_position_count = 0  # Reset counter
         prev_scroll_position = current_scroll_position
-        i += 1
 
-    if i > 5:
-        break
     time.sleep(0.5)
 
 
@@ -81,11 +81,13 @@ post_elms = soup.select("shreddit-post[permalink^='/r/']")
 for post_elm in post_elms:
     post_data = scrape_post_data(post_elm)
     scraped_data.append(post_data)
-    # print(f"\n{post_data}\n")
 
 
-# Save the current standard output (console)
-original_stdout = sys.stdout
+driver.quit()
+
+
+# - - - - - - - - - - - - - - - - - - - - - PRINTING OUTPUT
+original_stdout = sys.stdout  # saving the current standard o/p
 
 with open("output.txt", "w", encoding="utf-8") as file:
     # Redirect the standard output to the file
@@ -94,24 +96,6 @@ with open("output.txt", "w", encoding="utf-8") as file:
     for item in scraped_data:
         print(item)
 
-# Restore the original standard output
-sys.stdout = original_stdout
+sys.stdout = original_stdout  # restoring the original standard o/p
 
-print("Output has been saved to 'output.txt'")
-print(len(scraped_data))
-# print(scraped_data)
-
-
-driver.quit()
-
-
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# # Check if there are no more posts to load
-# try:
-#     end_msg = driver.find_element(
-#         By.XPATH, "//div[contains(@class, 'end-message')]"
-#     )
-#     if end_msg.is_displayed():
-#         break
-# except Exception:
-#     pass
+print(f"{len(scraped_data)} posts output saved to 'output.txt'")
